@@ -59,6 +59,7 @@ dependencies {
     // Lifecycle + ViewModel & LiveData
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.4.1"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.4.1"
     implementation "android.arch.lifecycle:common-java8:1.1.1"
 
     // Navigation Component
@@ -72,6 +73,8 @@ dependencies {
 
     // Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.4.0'
 
 
     // Dagger Hilt
@@ -86,9 +89,11 @@ dependencies {
     testImplementation 'com.google.dagger:hilt-android-testing:2.41'
     kaptTest 'com.google.dagger:hilt-compiler:2.41'
 
+    // DataStore
+    implementation("androidx.datastore:datastore:1.0.0")
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 
-// DataStore
-    implementation "androidx.datastore:datastore-preferences:1.0.0"
+
 }
 
 kapt {
