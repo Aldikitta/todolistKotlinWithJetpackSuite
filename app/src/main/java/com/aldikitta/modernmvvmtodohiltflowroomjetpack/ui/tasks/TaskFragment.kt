@@ -9,6 +9,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -16,6 +17,7 @@ import com.aldikitta.modernmvvmtodohiltflowroomjetpack.R
 import com.aldikitta.modernmvvmtodohiltflowroomjetpack.data.SortOrder
 import com.aldikitta.modernmvvmtodohiltflowroomjetpack.data.Task
 import com.aldikitta.modernmvvmtodohiltflowroomjetpack.databinding.FragmentTasksBinding
+import com.aldikitta.modernmvvmtodohiltflowroomjetpack.util.exhaustive
 import com.aldikitta.modernmvvmtodohiltflowroomjetpack.util.onQueryTextChanged
 import com.google.android.material.snackbar.Snackbar
 
@@ -58,6 +60,10 @@ class TaskFragment : Fragment(R.layout.fragment_tasks), TasksAdapter.OnItemClick
                 }
 
             }).attachToRecyclerView(recyclerViewTask)
+
+            fabAddTask.setOnClickListener{
+                viewModel.onAddNewTaskClick()
+            }
         }
 
 
@@ -74,7 +80,15 @@ class TaskFragment : Fragment(R.layout.fragment_tasks), TasksAdapter.OnItemClick
                             viewModel.onUndoDeleteClick(event.task)
                         }.show()
                     }
-                }
+                    is TaskViewModel.TaskEvent.NavigateToAddTaskScreen -> {
+                        val action = TaskFragmentDirections.actionTaskFragmentToAddEditTaskFragment(title = "New Task")
+                        findNavController().navigate(action)
+                    }
+                    is TaskViewModel.TaskEvent.NavigateToEditTaskScreen -> {
+                        val action = TaskFragmentDirections.actionTaskFragmentToAddEditTaskFragment(task = event.task, title = "Edit Task")
+                        findNavController().navigate(action)
+                    }
+                }.exhaustive
             }
         }
         setHasOptionsMenu(true)
