@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class TaskFragment : Fragment(R.layout.fragment_tasks), TasksAdapter.OnItemClickListener {
     private val viewModel: TaskViewModel by viewModels()
-
+    private lateinit var searchView: SearchView
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -62,12 +62,12 @@ class TaskFragment : Fragment(R.layout.fragment_tasks), TasksAdapter.OnItemClick
 
             }).attachToRecyclerView(recyclerViewTask)
 
-            fabAddTask.setOnClickListener{
+            fabAddTask.setOnClickListener {
                 viewModel.onAddNewTaskClick()
             }
         }
 
-        setFragmentResultListener("add_edit_request"){ _, bundle ->
+        setFragmentResultListener("add_edit_request") { _, bundle ->
             val result = bundle.getInt("add_edit_result")
             viewModel.onAddEditResult(result)
         }
@@ -77,24 +77,33 @@ class TaskFragment : Fragment(R.layout.fragment_tasks), TasksAdapter.OnItemClick
         }
 
         viewLifecycleOwner.lifecycleScope.launchWhenCreated {
-            viewModel.tasksEvent.collect {
-                event ->
-                when(event){
-                    is TaskViewModel.TaskEvent.ShowUndoDeleteTaskMessage ->{
-                        Snackbar.make(requireView(), "Task Deleted", Snackbar.LENGTH_LONG).setAction("UNDO"){
-                            viewModel.onUndoDeleteClick(event.task)
-                        }.show()
+            viewModel.tasksEvent.collect { event ->
+                when (event) {
+                    is TaskViewModel.TaskEvent.ShowUndoDeleteTaskMessage -> {
+                        Snackbar.make(requireView(), "Task Deleted", Snackbar.LENGTH_LONG)
+                            .setAction("UNDO") {
+                                viewModel.onUndoDeleteClick(event.task)
+                            }.show()
                     }
                     is TaskViewModel.TaskEvent.NavigateToAddTaskScreen -> {
-                        val action = TaskFragmentDirections.actionTaskFragmentToAddEditTaskFragment(title = "New Task")
+                        val action =
+                            TaskFragmentDirections.actionTaskFragmentToAddEditTaskFragment(title = "New Task")
                         findNavController().navigate(action)
                     }
                     is TaskViewModel.TaskEvent.NavigateToEditTaskScreen -> {
-                        val action = TaskFragmentDirections.actionTaskFragmentToAddEditTaskFragment(task = event.task, title = "Edit Task")
+                        val action = TaskFragmentDirections.actionTaskFragmentToAddEditTaskFragment(
+                            task = event.task,
+                            title = "Edit Task"
+                        )
                         findNavController().navigate(action)
                     }
                     is TaskViewModel.TaskEvent.ShowTaskSavedConfirmationMessage -> {
                         Snackbar.make(requireView(), event.msg, Snackbar.LENGTH_LONG).show()
+                    }
+                    TaskViewModel.TaskEvent.NavigateToDeleteAllCompletedScreen -> {
+                        val action =
+                            TaskFragmentDirections.actionGlobalDeleteAllCompletedDialogFragment()
+                        findNavController().navigate(action)
                     }
                 }.exhaustive
             }
@@ -106,7 +115,13 @@ class TaskFragment : Fragment(R.layout.fragment_tasks), TasksAdapter.OnItemClick
         inflater.inflate(R.menu.menu_fragment_tasks, menu)
 
         val searchItem = menu.findItem(R.id.actionSearch)
-        val searchView = searchItem.actionView as SearchView
+        searchView = searchItem.actionView as SearchView
+
+        val pendingQuery = viewModel.searchQuery.value
+        if (pendingQuery != null && pendingQuery.isNotEmpty()) {
+            searchItem.expandActionView()
+            searchView.setQuery(pendingQuery, false)
+        }
 
         searchView.onQueryTextChanged {
             viewModel.searchQuery.value = it
@@ -134,7 +149,7 @@ class TaskFragment : Fragment(R.layout.fragment_tasks), TasksAdapter.OnItemClick
                 true
             }
             R.id.actionDeleteAllCompletedTasks -> {
-
+                viewModel.onDeleteAllCompletedClick()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -147,5 +162,10 @@ class TaskFragment : Fragment(R.layout.fragment_tasks), TasksAdapter.OnItemClick
 
     override fun onCheckBoxClick(task: Task, isChecked: Boolean) {
         viewModel.onTaskCheckedChanged(task, isChecked)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        searchView.setOnQueryTextListener(null)
     }
 }
