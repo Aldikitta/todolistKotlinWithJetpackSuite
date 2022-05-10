@@ -5,6 +5,8 @@ import com.aldikitta.modernmvvmtodohiltflowroomjetpack.data.PreferencesManager
 import com.aldikitta.modernmvvmtodohiltflowroomjetpack.data.SortOrder
 import com.aldikitta.modernmvvmtodohiltflowroomjetpack.data.Task
 import com.aldikitta.modernmvvmtodohiltflowroomjetpack.data.TaskDao
+import com.aldikitta.modernmvvmtodohiltflowroomjetpack.ui.ADD_TASK_RESULT_OK
+import com.aldikitta.modernmvvmtodohiltflowroomjetpack.ui.EDIT_TASK_RESULT_OK
 import dagger.assisted.Assisted
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -69,10 +71,23 @@ class TaskViewModel @Inject constructor(
         tasksEventChannel.send(TaskEvent.NavigateToAddTaskScreen)
     }
 
+    fun onAddEditResult(result: Int){
+        when (result){
+            ADD_TASK_RESULT_OK -> showTaskSavedConfirmationMessage("Task added")
+            EDIT_TASK_RESULT_OK -> showTaskSavedConfirmationMessage("Task updated")
+
+        }
+    }
+
+    private fun showTaskSavedConfirmationMessage(text: String) = viewModelScope.launch {
+        tasksEventChannel.send(TaskEvent.ShowTaskSavedConfirmationMessage(text))
+    }
+
     sealed class TaskEvent {
         object NavigateToAddTaskScreen: TaskEvent()
         data class NavigateToEditTaskScreen(val task: Task) : TaskEvent()
         data class ShowUndoDeleteTaskMessage(val task: Task) : TaskEvent()
+        data class ShowTaskSavedConfirmationMessage(val msg: String): TaskEvent()
     }
 }
 
