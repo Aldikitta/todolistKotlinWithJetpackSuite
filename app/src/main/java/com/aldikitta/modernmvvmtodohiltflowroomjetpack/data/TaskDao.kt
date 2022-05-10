@@ -1,7 +1,6 @@
 package com.aldikitta.modernmvvmtodohiltflowroomjetpack.data
 
 import androidx.room.*
-//import com.aldikitta.modernmvvmtodohiltflowroomjetpack.ui.tasks.SortOrder
 import kotlinx.coroutines.flow.Flow
 
 @Dao
